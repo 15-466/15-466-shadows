@@ -79,20 +79,33 @@ glm::mat4 Scene::Camera::make_projection() const {
 
 //-------------------------
 
+glm::mat4 Scene::Light::make_projection() const {
+	assert(type == Spot);
+	return glm::perspective( spot_fov, 1.0f, clip_start, clip_end );
+}
 
-void Scene::draw(Camera const &camera) const {
+//-------------------------
+
+void Scene::draw(Camera const &camera, Drawable::PipelineType pipeline_type) const {
 	assert(camera.transform);
 	glm::mat4 clip_from_world = camera.make_projection() * glm::mat4(camera.transform->make_local_from_world());
 	glm::mat4x3 light_from_world = glm::mat4x3(1.0f);
-	draw(clip_from_world, light_from_world);
+	draw(clip_from_world, light_from_world, pipeline_type);
 }
 
-void Scene::draw(glm::mat4 const &clip_from_world, glm::mat4x3 const &light_from_world) const {
+void Scene::draw(Light const &light, Drawable::PipelineType pipeline_type) const {
+	assert(light.transform);
+	glm::mat4 clip_from_world = light.make_projection() * glm::mat4(light.transform->make_local_from_world());
+	glm::mat4x3 light_from_world = glm::mat4x3(1.0f);
+	draw(clip_from_world, light_from_world, pipeline_type);
+}
+
+void Scene::draw(glm::mat4 const &clip_from_world, glm::mat4x3 const &light_from_world, Drawable::PipelineType pipeline_type) const {
 
 	//Iterate through all drawables, sending each one to OpenGL:
 	for (auto const &drawable : drawables) {
 		//Reference to drawable's pipeline for convenience:
-		Scene::Drawable::Pipeline const &pipeline = drawable.pipeline;
+		Scene::Drawable::Pipeline const &pipeline = drawable.pipelines[pipeline_type];
 
 		//skip any drawables without a shader program set:
 		if (pipeline.program == 0) continue;

@@ -54,9 +54,16 @@ struct Scene {
 		Drawable(Transform *transform_) : transform(transform_) { assert(transform); }
 		Transform * transform;
 
+
+		//Each drawable contains pipeline information for...
+		enum PipelineType : uint32_t {
+			PipelineTypeDefault = 0, //...default drawing
+			PipelineTypeShadow = 1, //...drawing into a shadow map
+			PipelineTypes //count of pipeline types
+		};
 		//Contains all the data needed to run the OpenGL pipeline:
 		struct Pipeline {
-			GLuint program = 0; //shader program; passed to glUseProgram
+			GLuint program = 0; //shader program; passed to glUseProgram (if zero, drawing is skipped)
 
 			//attributes:
 			GLuint vao = 0; //attrib->buffer mapping; passed to glBindVertexArray
@@ -78,7 +85,7 @@ struct Scene {
 				GLuint texture = 0;
 				GLenum target = GL_TEXTURE_2D;
 			} textures[TextureCount];
-		} pipeline;
+		} pipelines[PipelineTypes];
 	};
 
 	struct Camera {
@@ -114,6 +121,13 @@ struct Scene {
 
 		//Spotlight specific:
 		float spot_fov = glm::radians(45.0f); //spot cone fov (in radians)
+
+		//near and far planes for shadow maps: (NOTE: NOT loaded from scene files!)
+		float clip_start = 0.1f;
+		float clip_end = 100.0f;
+
+		//computed from the above: (only for spotlights!)
+		glm::mat4 make_projection() const;
 	};
 
 	//Scenes, of course, may have many of the above objects:
@@ -123,10 +137,12 @@ struct Scene {
 	std::list< Light > lights;
 
 	//The "draw" function provides a convenient way to pass all the things in a scene to OpenGL:
-	void draw(Camera const &camera) const;
+	void draw(Camera const &camera, Drawable::PipelineType pipeline_type = Drawable::PipelineTypeDefault) const;
+	//you can also "look" at the scene through a light: (useful for shadow map rendering)
+	void draw(Light const &camera, Drawable::PipelineType pipeline_type = Drawable::PipelineTypeDefault) const;
 
 	//..sometimes, you want to draw with a custom projection matrix and/or light space:
-	void draw(glm::mat4 const &clip_from_world, glm::mat4x3 const &light_from_world = glm::mat4x3(1.0f)) const;
+	void draw(glm::mat4 const &clip_from_world, glm::mat4x3 const &light_from_world = glm::mat4x3(1.0f), Drawable::PipelineType pipeline_type = Drawable::PipelineTypeDefault) const;
 
 	//add transforms/objects/cameras from a scene file to this scene:
 	// the 'on_drawable' callback gives your code a chance to look up mesh data and make Drawables:
