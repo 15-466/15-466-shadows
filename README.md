@@ -2,6 +2,8 @@
 
 This code demonstrates using a shadow map to compute visibility of a spotlight from arbitrary points in the scene. It is a modified version of [15-466-f25-base2](https://github.com/15-466/15-466-f25-base2), including updated example code from [15-466-f18-base3](https://github.com/15-466/15-466-f18-base3).
 
+![Screen Shot](screenshot.png)
+
 The main driver of the demo is `ShadowMapDemoMode`; if you look at its `draw` function you will see that it first renders the scene to a depth texture from the point of view of the spotlight (using some new helpers in `Scene`), then does the main render, using this shadow map for depth testing.
 
 Things to pay particular attention to:
