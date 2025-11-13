@@ -32,15 +32,6 @@ Load< GLuint > meshes_for_depth_only_program(LoadTagDefault, [](){
 	return new GLuint(meshes->make_vao_for_program(depth_only_program->program));
 });
 
-//used for fullscreen passes:
-Load< GLuint > empty_vao(LoadTagDefault, [](){
-	GLuint vao = 0;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	glBindVertexArray(0);
-	return new GLuint(vao);
-});
-
 GLuint load_texture(std::string const &filename) {
 	glm::uvec2 size;
 	std::vector< glm::u8vec4 > data;
