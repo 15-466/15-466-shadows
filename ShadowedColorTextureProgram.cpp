@@ -61,12 +61,18 @@ ShadowedColorTextureProgram::ShadowedColorTextureProgram() {
 		"	{ //spot (point with fov + shadow map) light:\n"
 		"		vec3 l = normalize(spot_position - position);\n"
 		"		float nl = max(0.0, dot(n,l));\n"
-		"		//TODO: look up shadow map\n"
 		"		float d = dot(l,-spot_direction);\n"
 		"		float amt = smoothstep(spot_outer_inner.x, spot_outer_inner.y, d);\n"
 		"		float shadow = textureProj(spot_depth_tex, spotPosition);\n"
+		/* adding more samples to smooth things out:
+		"		float shadow =\n"
+		"			0.2 * (textureProjOffset(spot_depth_tex, spotPosition, ivec2(-1,-1))"
+		"			+ textureProjOffset(spot_depth_tex, spotPosition, ivec2( 1,-1))"
+		"			+ textureProjOffset(spot_depth_tex, spotPosition, ivec2( 0, 0))"
+		"			+ textureProjOffset(spot_depth_tex, spotPosition, ivec2(-1, 1))"
+		"			+ textureProjOffset(spot_depth_tex, spotPosition, ivec2( 1, 1)));\n"
+		*/
 		"		total_light += shadow * nl * amt * spot_color;\n"
-		//"		fragColor = vec4(s,s,s, 1.0);\n" //DEBUG: just show shadow
 		"	}\n"
 
 		"	fragColor = texture(tex, texCoord) * vec4(color.rgb * total_light, color.a);\n"
